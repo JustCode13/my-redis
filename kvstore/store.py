@@ -1,10 +1,12 @@
 from .models import Entry
+from .cache import LRUManager
 from typing import Any
 import time
 
 class KeyValueStore:
     def __init__(self):
         self.kvstore: dict[str,Entry] = {}
+        self.ordered_dict = LRUManager()
 
     def set(self,key,value:Any, ttl=None):
         entry = Entry(
@@ -16,7 +18,8 @@ class KeyValueStore:
         )
         
         self.kvstore[key] = entry
-        print(self.kvstore)
+        self.ordered_dict.touch(key)
+
 
     def get(self):
         pass
