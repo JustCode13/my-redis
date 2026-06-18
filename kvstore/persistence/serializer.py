@@ -10,8 +10,8 @@ class JsonSerializer:
 
     def serialize(self,data:dict[str,Entry]):
         json_data = json.dumps({k: v.to_dict() for k, v in data.items()})
-        
-        return json_data
+        json_encoded_data = json_data.encode("utf-8")
+        return json_encoded_data
 
     def deserializer(self,json_data: str):
         data = json.loads(json_data)

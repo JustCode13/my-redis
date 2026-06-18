@@ -1,6 +1,6 @@
 from .models import Entry
 from .cache import LRUManager
-from .persistence import JsonSerializer
+from .persistence import FileStorage
 
 from typing import Any
 import time
@@ -15,7 +15,7 @@ class KeyValueStore:
     def __init__(self):
         self.kvstore: dict[str,Entry] = {}
         self.ordered_dict = LRUManager()
-        self.json_serializer = JsonSerializer()
+        self.file_storage = FileStorage()
 
     def set(self,key,value:Any, ttl=None):
 
@@ -36,10 +36,8 @@ class KeyValueStore:
             self.ordered_dict.oldest_key()
             self.ordered_dict.touch(key)
         
-        json_data = self.json_serializer.serialize(self.kvstore)
-        data = self.json_serializer.deserializer(json_data)
-        print(data)
-
+        self.file_storage.save(self.kvstore)
+        self.kvstore = self.file_storage.load()
         
 
     def get(self):
