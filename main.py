@@ -13,10 +13,9 @@ def main():
         "shoppingcart", 
         ["PC","Laptop","Bag"],
         1
-        )
-    time.sleep(3)    
+        )   
     kvstore.get("otp")
-    
+    kvstore.delete("otp")
 
 
 if __name__ == "__main__":

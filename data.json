@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-{"otp": {"value": {"userid": "123", "name": "tea", "age": 20}, "created_at": 17001.6910921, "expired_at": 17002.6910921, "metadata": {}}, "shoppingcart": {"value": ["PC", "Laptop", "Bag"], "created_at": 17001.6941564, "expired_at": 17002.6941564, "metadata": {}}}
-=======
-{"otp": {"value": {"userid": "123", "name": "tea", "age": 20}, "created_at": 12622.7885947, "expired_at": null, "metadata": {}}}
->>>>>>> ae3a0c17f5705f5c629728cb7ccd129e56ce1c07
+{"shoppingcart": {"value": ["PC", "Laptop", "Bag"], "created_at": 33008.7915244, "expired_at": 33009.7915244, "metadata": {}}}
