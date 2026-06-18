@@ -8,3 +8,6 @@ class Entry:
     created_at: float
     expired_at: float | None
     metadata: dict[str,Any]
+
+    def to_dict(self):
+        return self.__dict__

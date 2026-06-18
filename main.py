@@ -4,7 +4,10 @@ import time
 
 def main():
     kvstore = KeyValueStore()
-    kvstore.set("otp",{"userid":"123","name":"tea","age":20})
+    kvstore.set(
+        "otp", 
+        {"userid":"123","name":"tea","age":20}
+        )
 
 
 

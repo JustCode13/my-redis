@@ -10,7 +10,6 @@ class LRUManager:
             self.ordered_dict.move_to_end(key)
 
         self.ordered_dict[key] = None
-        print(self.ordered_dict)
 
 
     def remove(self,key):
