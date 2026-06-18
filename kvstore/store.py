@@ -36,13 +36,11 @@ class KeyValueStore:
         else:
             self.ordered_dict.oldest_key()
             self.ordered_dict.touch(key)
-            self.ordered_dict.touch("hello")
+            self.ordered_dict.touch("hello") 
 
         
         self.file_storage.save(self.kvstore)
 
-        print(self.kvstore["otp"].created_at)
-        print(self.kvstore["otp"].expired_at)
         
 
     def get(self,key):
