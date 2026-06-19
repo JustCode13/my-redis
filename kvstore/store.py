@@ -115,3 +115,15 @@ class KeyValueStore:
                 return True
         else:
             return False
+        
+    def _remove_key(self,key):
+        if key not in self.kvstore:
+            return False
+        
+        del self.kvstore[key]
+
+        self.ordered_dict.remove(key)
+
+        self.file_storage.save(self.kvstore)
+        
+        return True
