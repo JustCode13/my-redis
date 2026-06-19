@@ -33,3 +33,6 @@ class LRUManager:
     def get_keys(self):
         keys = self.ordered_dict.keys()
         return list(keys)
+
+    def remove_all(self):
+        self.ordered_dict = OrderedDict()

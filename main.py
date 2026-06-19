@@ -17,6 +17,9 @@ def main():
     kvstore.get("otp")
     kvstore.delete("otp")
 
+    kvstore.clear()
+    
+
 
 if __name__ == "__main__":
     main()

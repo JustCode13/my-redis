@@ -52,7 +52,7 @@ class KeyValueStore:
 
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
                 print(f"key: {key} has been expired.")
-                self.kvstore.pop(key)
+                del self.kvstore[key]
                 self.ordered_dict.remove(key)
                 return None
         else:
@@ -71,4 +71,32 @@ class KeyValueStore:
         self.file_storage.save(self.kvstore)    
     
         return True
+    
+    def exists(self,key):
+        if key not in self.kvstore:
+            return {"exists": False}
+        
+        entry_obj = self.kvstore[key]
+        now = time.monotonic()
 
+        if entry_obj.expired_at is not None and now > entry_obj.expired_at:
+
+            del self.kvstore[key]
+
+            self.ordered_dict.remove(key)
+
+            self.file_storage.save(self.kvstore) 
+
+            return {"exists":True,"expired":True}
+        
+        return {"exists":True,"expired":False}
+        
+
+    def clear(self):
+        self.kvstore = {}
+        self.ordered_dict.remove_all()
+        self.file_storage.save(self.kvstore)
+            
+
+    def size(self):
+        pass
