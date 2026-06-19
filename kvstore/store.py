@@ -108,4 +108,10 @@ class KeyValueStore:
         else:
             return
         
-    
+    def _is_expired(self, entry):
+        now = time.monotonic()
+        if entry.expired_at is not None:
+            if now > entry.expired_at:
+                return True
+        else:
+            return False
