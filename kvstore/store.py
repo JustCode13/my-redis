@@ -147,3 +147,6 @@ class KeyValueStore:
         
     def _save(self):
         self.file_storage.save(self.kvstore)
+
+    def close(self):
+        pass
