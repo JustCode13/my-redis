@@ -17,16 +17,16 @@ class KeyValueStore:
         self.kvstore: dict[str,Entry] = {}
         self.ordered_dict = LRUManager()
         self.file_storage = FileStorage()
+        self.expiration_manager = ExpirationManager()
 
     def set(self,key,value:Any, ttl=None):
 
-        now = time.monotonic()
 
         entry = Entry(
             # key,
             value,
-            created_at=now,
-            expired_at=now + ttl if ttl else None,
+            created_at=self.expiration_manager.current_time(),
+            expired_at=self.expiration_manager.calculate_expire_time(),
             metadata={}
         )
         
