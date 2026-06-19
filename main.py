@@ -3,22 +3,20 @@ import datetime
 import time
 
 def main():
-    kvstore = KeyValueStore()
-    kvstore.set(
+    store = KeyValueStore()
+    store.set(
         "otp", 
         {"userid":"123","name":"tea","age":20},
         )
-    kvstore.set(
+    store.set(
         "shoppingcart", 
         ["PC","Laptop","Bag"],
         1
         )   
-    kvstore.get("otp")
-    # kvstore.delete("otp")
-
-    # kvstore.clear()
-    kvstore.size()
-
+    
+    
+    
+    
 
 
 if __name__ == "__main__":

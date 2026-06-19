@@ -101,3 +101,11 @@ class KeyValueStore:
     def size(self):
         kvstore_size = len(self.kvstore)
         return kvstore_size
+
+    def _evict_if_needed(self):
+        if self.ordered_dict.is_full():
+            self.ordered_dict.oldest_key()
+        else:
+            return
+        
+    
