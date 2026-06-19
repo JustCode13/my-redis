@@ -125,5 +125,23 @@ class KeyValueStore:
         self.ordered_dict.remove(key)
 
         self.file_storage.save(self.kvstore)
-        
+
         return True
+    
+    def _load(self):
+        self.kvstore = self.file_storage.load()
+
+        now = time.monotonic()
+
+        for k, v in self.kvstore.items():
+            if v.expired_at is not None and now > v.expired_at:
+                del self.kvstore[key]
+                self.ordered_dict.remove(key)
+
+        keys = list(self.kvstore.keys())
+
+        self.ordered_dict.remove_all()
+
+        for key in keys:
+            self.ordered_dict.touch(key)
+        
