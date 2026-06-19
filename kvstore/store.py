@@ -99,4 +99,5 @@ class KeyValueStore:
             
 
     def size(self):
-        pass
+        kvstore_size = len(self.kvstore)
+        return kvstore_size

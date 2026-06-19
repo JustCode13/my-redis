@@ -7,7 +7,6 @@ def main():
     kvstore.set(
         "otp", 
         {"userid":"123","name":"tea","age":20},
-        1
         )
     kvstore.set(
         "shoppingcart", 
@@ -15,10 +14,11 @@ def main():
         1
         )   
     kvstore.get("otp")
-    kvstore.delete("otp")
+    # kvstore.delete("otp")
 
-    kvstore.clear()
-    
+    # kvstore.clear()
+    kvstore.size()
+
 
 
 if __name__ == "__main__":
