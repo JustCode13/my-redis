@@ -145,3 +145,5 @@ class KeyValueStore:
         for key in keys:
             self.ordered_dict.touch(key)
         
+    def _save(self):
+        self.file_storage.save(self.kvstore)
