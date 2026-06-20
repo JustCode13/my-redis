@@ -2,8 +2,10 @@ from .models import Entry
 from .cache import LRUManager
 from .persistence import FileStorage
 from .ttl import ExpirationManager
+from .workers import SweeperThread
 
 from typing import Any
+import threading
 import time
 
 
@@ -12,34 +14,33 @@ import time
 set(self,key,value:Any, ttl=None)
 
 '''
-class KeyValueStore:
+class KeyValueDatabase:
     def __init__(self):
         self.kvstore: dict[str,Entry] = {}
         self.ordered_dict = LRUManager()
         self.file_storage = FileStorage()
         self.expiration_manager = ExpirationManager()
+        self.lock = threading.RLock()
+        self.sweeper = SweeperThread(self)
+        self.sweeper.start()
 
     def set(self,key,value:Any, ttl=None):
-
-
         entry = Entry(
             # key,
             value,
             created_at=self.expiration_manager.current_time(),
-            expired_at=self.expiration_manager.calculate_expire_time(),
+            expired_at=self.expiration_manager.calculate_expire_time(ttl),
             metadata={}
         )
-        
-        self.kvstore[key] = entry
-        if not self.ordered_dict.is_full():
-            self.ordered_dict.touch(key)
-            self.ordered_dict.touch("hello")
-        else:
-            self.ordered_dict.oldest_key()
-            self.ordered_dict.touch(key)
-            self.ordered_dict.touch("hello") 
-
-        
+        with self.lock:
+            self.kvstore[key] = entry
+            if not self.ordered_dict.is_full():
+                self.ordered_dict.touch(key)
+            else:
+                oldest_key = self.ordered_dict.oldest_key()
+                del self.kvstore[oldest_key]
+                self.ordered_dict.touch(key)
+            
         self.file_storage.save(self.kvstore)
 
         
@@ -52,22 +53,24 @@ class KeyValueStore:
         now = time.monotonic()
 
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
-                print(f"key: {key} has been expired.")
-                del self.kvstore[key]
-                self.ordered_dict.remove(key)
-                return None
+                with self.lock:
+                    print(f"key: {key} has been expired.")
+                    del self.kvstore[key]
+                    self.ordered_dict.remove(key)
+                    return None
         else:
-            self.ordered_dict.touch(key)
+            with self.lock:
+                self.ordered_dict.touch(key)
             return entry_obj.value
 
 
     def delete(self,key):
         if key not in self.kvstore:
             return False
-        
-        del self.kvstore[key]
+        with self.lock:
+            del self.kvstore[key]
 
-        self.ordered_dict.remove(key)
+            self.ordered_dict.remove(key)
 
         self.file_storage.save(self.kvstore)    
     
@@ -81,10 +84,10 @@ class KeyValueStore:
         now = time.monotonic()
 
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
+            with self.lock:
+                del self.kvstore[key]
 
-            del self.kvstore[key]
-
-            self.ordered_dict.remove(key)
+                self.ordered_dict.remove(key)
 
             self.file_storage.save(self.kvstore) 
 
@@ -94,8 +97,9 @@ class KeyValueStore:
         
 
     def clear(self):
-        self.kvstore = {}
-        self.ordered_dict.remove_all()
+        with self.lock:
+            self.kvstore = {}
+            self.ordered_dict.remove_all()
         self.file_storage.save(self.kvstore)
             
 
@@ -105,7 +109,8 @@ class KeyValueStore:
 
     def _evict_if_needed(self):
         if self.ordered_dict.is_full():
-            self.ordered_dict.oldest_key()
+            with self.lock:
+                self.ordered_dict.oldest_key()
         else:
             return
         
@@ -121,9 +126,10 @@ class KeyValueStore:
         if key not in self.kvstore:
             return False
         
-        del self.kvstore[key]
+        with self.lock:
+            del self.kvstore[key]
 
-        self.ordered_dict.remove(key)
+            self.ordered_dict.remove(key)
 
         self.file_storage.save(self.kvstore)
 
@@ -136,18 +142,20 @@ class KeyValueStore:
 
         for k, v in self.kvstore.items():
             if v.expired_at is not None and now > v.expired_at:
-                del self.kvstore[key]
-                self.ordered_dict.remove(key)
+                with self.lock:
+                    del self.kvstore[key]
+                    self.ordered_dict.remove(key)
 
         keys = list(self.kvstore.keys())
-
-        self.ordered_dict.remove_all()
-
-        for key in keys:
-            self.ordered_dict.touch(key)
+        with self.lock:
+            self.ordered_dict.remove_all()
+        
+        with self.lock:
+            for key in keys:
+                self.ordered_dict.touch(key)
         
     def _save(self):
         self.file_storage.save(self.kvstore)
 
     def close(self):
-        pass
+        self.sweeper.stop()
