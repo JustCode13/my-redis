@@ -25,23 +25,26 @@ class KeyValueDatabase:
         self.sweeper.start()
 
     def set(self,key,value:Any, ttl=None):
-        entry = Entry(
-            # key,
-            value,
-            created_at=self.expiration_manager.current_time(),
-            expired_at=self.expiration_manager.calculate_expire_time(ttl),
-            metadata={}
-        )
-        with self.lock:
-            self.kvstore[key] = entry
-            if not self.ordered_dict.is_full():
-                self.ordered_dict.touch(key)
-            else:
-                oldest_key = self.ordered_dict.oldest_key()
-                del self.kvstore[oldest_key]
-                self.ordered_dict.touch(key)
-            
-        self.file_storage.save(self.kvstore)
+        try:
+            entry = Entry(
+                # key,
+                value,
+                created_at=self.expiration_manager.current_time(),
+                expired_at=self.expiration_manager.calculate_expire_time(ttl),
+                metadata={}
+            )
+            with self.lock:
+                self.kvstore[key] = entry
+                if not self.ordered_dict.is_full():
+                    self.ordered_dict.touch(key)
+                else:
+                    oldest_key = self.ordered_dict.oldest_key()
+                    del self.kvstore[oldest_key]
+                    self.ordered_dict.touch(key)
+                
+            self.file_storage.save(self.kvstore)
+        except Exception as e:
+            print(e)
 
         
 
