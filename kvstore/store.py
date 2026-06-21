@@ -3,6 +3,7 @@ from .cache import LRUManager
 from .persistence import FileStorage
 from .ttl import ExpirationManager
 from .workers import SweeperThread
+from .utils import create_lock, create_simple_lock, monotonic_now, error_logger, info_logger
 
 from typing import Any
 import threading
@@ -20,7 +21,7 @@ class KeyValueStore:
         self.ordered_dict = LRUManager()
         self.file_storage = FileStorage()
         self.expiration_manager = ExpirationManager()
-        self.lock = threading.RLock()
+        self.lock = create_lock()
         self.sweeper = SweeperThread(self)
         self.sweeper.start()
 
@@ -44,7 +45,7 @@ class KeyValueStore:
                 
             self.file_storage.save(self.kvstore)
         except Exception as e:
-            print(e)
+            error_logger(e)
 
         
 
@@ -53,11 +54,11 @@ class KeyValueStore:
             return None
         
         entry_obj = self.kvstore[key]
-        now = time.monotonic()
+        now = monotonic_now()
 
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
                 with self.lock:
-                    print(f"key: {key} has been expired.")
+                    info_logger(f"key: {key} has been expired.")
                     del self.kvstore[key]
                     self.ordered_dict.remove(key)
                     return None
@@ -84,7 +85,7 @@ class KeyValueStore:
             return {"exists": False}
         
         entry_obj = self.kvstore[key]
-        now = time.monotonic()
+        now = monotonic_now()
 
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
             with self.lock:
@@ -118,7 +119,7 @@ class KeyValueStore:
             return
         
     def _is_expired(self, entry):
-        now = time.monotonic()
+        now = monotonic_now()
         if entry.expired_at is not None:
             if now > entry.expired_at:
                 return True
@@ -141,7 +142,7 @@ class KeyValueStore:
     def _load(self):
         self.kvstore = self.file_storage.load()
 
-        now = time.monotonic()
+        now = monotonic_now()
 
         for k, v in self.kvstore.items():
             if v.expired_at is not None and now > v.expired_at:

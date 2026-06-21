@@ -1,4 +1,5 @@
 import time
+from ..utils import monotonic_now
 
 class ExpirationManager:
     def __init__(self):
@@ -11,7 +12,7 @@ class ExpirationManager:
             return None
         
     def current_time(self):
-        return time.monotonic()
+        return monotonic_now()
     
     def is_expired(self,expired_time: float | None):
         if expired_time is not None and self.current_time() > expired_time:

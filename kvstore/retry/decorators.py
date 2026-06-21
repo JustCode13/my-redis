@@ -2,6 +2,7 @@ import time
 import random
 from functools import wraps
 from .backoff import ExponentialBackoff
+from ..utils import info_logger
 
 
 def retry(
@@ -22,7 +23,7 @@ def retry(
                     return result
 
                 except exceptions as e:
-                    print(f"Attempt {attempt} failed: {e}")
+                    info_logger(f"Attempt {attempt} failed: {e}")
 
                     if attempt == retries:
                         raise
