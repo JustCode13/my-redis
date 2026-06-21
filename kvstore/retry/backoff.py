@@ -9,7 +9,7 @@ class ExponentialBackoff:
     def next_delay(self):   
         current_delay = self.initial_delay
         self.initial_delay *= self.factor
-        return current_delay if current_delay < 60 else 60
+        return current_delay if current_delay < self.max_delay else self.max_delay
     
     def reset(self):
         self.initial_delay = 1
