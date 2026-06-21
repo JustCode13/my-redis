@@ -14,7 +14,7 @@ import time
 set(self,key,value:Any, ttl=None)
 
 '''
-class KeyValueDatabase:
+class KeyValueStore:
     def __init__(self):
         self.kvstore: dict[str,Entry] = {}
         self.ordered_dict = LRUManager()

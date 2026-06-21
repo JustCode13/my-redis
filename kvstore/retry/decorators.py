@@ -1,7 +1,7 @@
 import time
 import random
 from functools import wraps
-from backoff import ExponentialBackoff
+from .backoff import ExponentialBackoff
 
 
 def retry(
@@ -36,4 +36,4 @@ def retry(
 
 
 def with_jitter(delay: float):
-    return delay + random.uniform()
+    return delay + random.uniform(0,2)
