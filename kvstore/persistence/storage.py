@@ -14,6 +14,9 @@ class FileStorage:
 
         with open("temp.json","wb") as file:
             file.write(json_encoded_data)
+            file.flush()
+            os.fsync(file.fileno()) # when we open a file it gets a number, so we are getting that number with file.fileno and saying os.fsync to write data into that file
+
 
         os.replace("temp.json",self.file_path)
 
@@ -31,6 +34,12 @@ class FileStorage:
 
         with open("temp.json","wb") as file:
             file.write(json_encoded_data)
+            file.flush()
+            os.fsync(file.fileno)
 
     def _atomic_replace(self):
         os.replace("temp.json",self.file_path)
+
+
+
+# Python buffer -> OS buffer -> Disk
