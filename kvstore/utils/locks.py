@@ -2,9 +2,9 @@ import threading
 
 
 def create_lock():
-    return threading.RLock
+    return threading.RLock()
 
 
 def create_simple_lock():
-    return threading.Lock
+    return threading.Lock()
 

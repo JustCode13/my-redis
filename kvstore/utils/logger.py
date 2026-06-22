@@ -7,10 +7,10 @@ logger.setLevel(logging.DEBUG)
 
 
 def info_logger(message):
-    logger.info("Just an information")
+    logger.info(message)
 
 def warning_logger(message):
-    logger.warning("Its a warning")
+    logger.warning(message)
 
 def error_logger(message):
-    logger.error("Did you try to divide by zero?")
+    logger.error(message)

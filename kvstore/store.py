@@ -38,7 +38,7 @@ class KeyValueStore:
             )
             with self.lock:
                 self.kvstore[key] = entry
-                self.weak_reference_pool.add(key)
+                self.weak_reference_pool.add(key,entry)
                 if not self.ordered_dict.is_full():
                     self.ordered_dict.touch(key)
                 else:
@@ -60,7 +60,7 @@ class KeyValueStore:
 
     def get(self,key):
         if key not in self.kvstore:
-            raise KeyNotFoundError(key)
+            return False
         
         entry_obj = self.kvstore[key]
         now = monotonic_now()
@@ -91,7 +91,7 @@ class KeyValueStore:
     
     def exists(self,key):
         if key not in self.kvstore:
-            raise KeyNotFoundError(key)
+            return False
         
         entry_obj = self.kvstore[key]
         now = monotonic_now()
