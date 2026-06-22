@@ -4,6 +4,7 @@ from .persistence import FileStorage
 from .ttl import ExpirationManager
 from .workers import SweeperThread
 from .utils import create_lock, create_simple_lock, monotonic_now, error_logger, info_logger
+from .references import WeakReferencePool
 
 from typing import Any
 import threading
@@ -21,6 +22,7 @@ class KeyValueStore:
         self.ordered_dict = LRUManager()
         self.file_storage = FileStorage()
         self.expiration_manager = ExpirationManager()
+        self.weak_reference_pool = WeakReferencePool()
         self.lock = create_lock()
         self.sweeper = SweeperThread(self)
         self.sweeper.start()
@@ -36,11 +38,15 @@ class KeyValueStore:
             )
             with self.lock:
                 self.kvstore[key] = entry
+                self.weak_reference_pool.add(key)
                 if not self.ordered_dict.is_full():
                     self.ordered_dict.touch(key)
                 else:
                     oldest_key = self.ordered_dict.oldest_key()
                     del self.kvstore[oldest_key]
+
+                    self.weak_reference_pool.remove(key)
+
                     self.ordered_dict.touch(key)
                 
             self.file_storage.save(self.kvstore)
@@ -60,7 +66,11 @@ class KeyValueStore:
                 with self.lock:
                     info_logger(f"key: {key} has been expired.")
                     del self.kvstore[key]
+
+                    self.weak_reference_pool.remove(key)
+
                     self.ordered_dict.remove(key)
+                    
                     return None
         else:
             with self.lock:
@@ -73,6 +83,8 @@ class KeyValueStore:
             return False
         with self.lock:
             del self.kvstore[key]
+
+            self.weak_reference_pool.remove(key)
 
             self.ordered_dict.remove(key)
 
@@ -90,6 +102,8 @@ class KeyValueStore:
         if entry_obj.expired_at is not None and now > entry_obj.expired_at:
             with self.lock:
                 del self.kvstore[key]
+
+                self.weak_reference_pool.remove(key)
 
                 self.ordered_dict.remove(key)
 
@@ -133,6 +147,8 @@ class KeyValueStore:
         with self.lock:
             del self.kvstore[key]
 
+            self.weak_reference_pool.remove(key)
+
             self.ordered_dict.remove(key)
 
         self.file_storage.save(self.kvstore)
@@ -148,6 +164,9 @@ class KeyValueStore:
             if v.expired_at is not None and now > v.expired_at:
                 with self.lock:
                     del self.kvstore[key]
+
+                    self.weak_reference_pool.remove(key)
+
                     self.ordered_dict.remove(key)
 
         keys = list(self.kvstore.keys())
